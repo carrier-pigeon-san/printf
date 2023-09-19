@@ -1,36 +1,50 @@
 #include "main.h"
-#include <stdarg.h>
-#include <unistd.h>
-#include <string.h>
+
 /**
- * _printf - prints char, string, %
- * @format: character string
- * Return: number of characters printed
+ * _printf - prints formatted data to stdout
+ * @format: string that contains the format to print
+ * Return: number of characters written
  */
-int _printf(const char *format, ...)
+int _printf(char *format, ...)
 {
-	va_list args;
-	int i = 0, num_chars = 0;
+	int written = 0, (*structype)(char *, va_list);
+	char q[3];
+	va_list pa;
 
 	if (format == NULL)
 		return (-1);
-	va_start(args, format);
-	while (format[i] != '\0')
+	q[2] = '\0';
+	va_start(pa, format);
+	_putchar(-1);
+	while (format[0])
 	{
-		if (format[i] == '%')
+		if (format[0] == '%')
 		{
-			i++;
-			num_chars += _printf_helper(&format[i], args);
+			structype = driver(format);
+			if (structype)
+			{
+				q[0] = '%';
+				q[1] = format[1];
+				written += structype(q, pa);
+			}
+			else if (format[1] != '\0')
+			{
+				written += _putchar('%');
+				written += _putchar(format[1]);
+			}
+			else
+			{
+				written += _putchar('%');
+				break;
+			}
+			format += 2;
 		}
 		else
 		{
-			if (write(1, &format[i], 1) == -1)
-				return (-1);
-			num_chars++;
+			written += _putchar(format[0]);
+			format++;
 		}
-		i++;
 	}
-	va_end(args);
-	return (num_chars);
+	_putchar(-2);
+	return (written);
 }
-
